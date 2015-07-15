@@ -7,8 +7,11 @@
 ##############################################################################################################
 
 require 'benchmark'
+require 'memoist'
 
 class Fibonacci
+  extend Memoist
+
   def initialize
     @fib_array = [0,1]
   end
@@ -28,23 +31,32 @@ class Fibonacci
     return (nth > 2)? (get_fib_old(nth-1)+get_fib_old(nth-2)) : 1
   end
 
+  def memoist_fib(nth)
+    return (nth > 2)? (get_fib_old(nth-1)+get_fib_old(nth-2)) : 1
+  end
+  memoize :memoist_fib
+
+
 end
 
-fibth = 40
+fibth = 35
 fib = Fibonacci.new
+
+
 Benchmark.bmbm do |x|
-  x.report("Nomal Fib") {fib.get_fib_old(fibth)}
-  x.report("Memo Fib") {fib.get_fib(fibth)}
+  x.report ("Normal Fib"){fib.get_fib_old(fibth)}
+  x.report ("Cashed Fib"){fib.get_fib(fibth)}
+  x.report ("Gem Mem Fib"){fib.memoist_fib(fibth)}
 end
-##############################################################################################################
+
+###########################################################################
+# Rehearsal -----------------------------------------------
+#           Normal Fib    1.330000   0.020000   1.350000 (  1.369870)
+# Cashed Fib    0.150000   0.000000   0.150000 (  0.154217)
+# Gem Mem Fib   1.280000   0.000000   1.280000 (  1.294117)
+# -------------------------------------- total: 2.780000sec
 #
-#               Rehearsal ---------------------------------------------
-#               Nomal Fib  13.670000   0.040000  13.710000 ( 13.897558)
-#               Memo Fib    0.620000   0.010000   0.630000 (  0.627383)
-#               ----------------------------------- total: 14.340000sec
-#
-#               user     system      total        real
-#               Nomal Fib  13.420000   0.030000  13.450000 ( 13.554259)
-#               Memo Fib    0.580000   0.000000   0.580000 (  0.597131)
-#
-##############################################################################################################
+# user     system      total        real
+# Normal Fib    1.250000   0.010000   1.260000 (  1.257070)
+# Cashed Fib    0.060000   0.000000   0.060000 (  0.063963)
+# Gem Mem Fib   0.000000   0.000000   0.000000 (  0.000027)
